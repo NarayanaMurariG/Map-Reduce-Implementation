@@ -37,6 +37,17 @@ public class Utils {
         return builder;
     }
 
+    public static long getTotalNoOfLines(String filePath) {
+        long totalNoOfLines = -1;
+        try {
+            Path path = Paths.get(filePath);
+            totalNoOfLines = Files.lines(path).count();
+        }catch (Exception e){
+            System.out.println("Exception Occoured while extracting file size");
+        }
+        return totalNoOfLines;
+    }
+
 //    https://gist.github.com/kabronkline/e9f2c0fcad02c69c3212
 //    public static int breakAtIndex(String filePath){
 //
