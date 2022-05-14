@@ -1,4 +1,4 @@
-package mapReduce;
+package mapreduce;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class Worker{
+public class Worker {
 
     private static ProcessType processType;
     private static int workerNo;
@@ -61,77 +61,77 @@ public class Worker{
         try {
             startServer(args);
             fetchInstructionsFromMaster();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Exception Occured In Worker Thread");
             e.printStackTrace();
         }
 
     }
 
-    private static void startServer(String[] args) throws Exception{
+    private static void startServer(String[] args) throws Exception {
 
-            if(args.length < 2){
-                serverPort = Constants.DEFAULT_SERVER_PORT;
-            }else{
-                serverPort = Integer.parseInt(args[2]);
-            }
-            System.out.println("Starting worker port on : "+serverPort);
-            server = new ServerSocket(serverPort);
+        if (args.length < 2) {
+            serverPort = Constants.DEFAULT_SERVER_PORT;
+        } else {
+            serverPort = Integer.parseInt(args[2]);
+        }
+        System.out.println("Starting worker port on : " + serverPort);
+        server = new ServerSocket(serverPort);
     }
 
-    private static void startReducePhase(DataInputStream inputStream, DataOutputStream outputStream) throws Exception{
+    private static void startReducePhase(DataInputStream inputStream, DataOutputStream outputStream) throws Exception {
 
-        String incomingMessage,outgoingMessage;
+        String incomingMessage, outgoingMessage;
         incomingMessage = inputStream.readUTF();
         List<String> intermediateFilePaths = Arrays.asList(incomingMessage.split(","));
-        System.out.println("Working with intermediate files : "+ intermediateFilePaths.toString());
+        System.out.println("Working with intermediate files : " + intermediateFilePaths.toString());
         outputStream.writeUTF(Constants.OK);
 
         incomingMessage = inputStream.readUTF();
         startLineNo = Integer.parseInt(incomingMessage);
-        System.out.println("Start Line (Exclusive) : "+ startLineNo);
+        System.out.println("Start Line (Exclusive) : " + startLineNo);
         outputStream.writeUTF(Constants.OK);
 
         incomingMessage = inputStream.readUTF();
         endLineNo = Integer.parseInt(incomingMessage);
-        System.out.println("End Line (Inclusive) : "+ endLineNo);
+        System.out.println("End Line (Inclusive) : " + endLineNo);
         outputStream.writeUTF(Constants.OK);
 
-        //TODO Now perform map phase and generate Intermediate File
+        // TODO Now perform map phase and generate Intermediate File
 
-        //Send response to master
+        // Send response to master
         incomingMessage = inputStream.readUTF();
-        System.out.println("Message from Client : "+incomingMessage);
-//        outgoingMessage = "IntermediateFile.txt";
-        outgoingMessage = generateWordCountIntermediateFile(filePath,startLineNo,endLineNo);
+        System.out.println("Message from Client : " + incomingMessage);
+        // outgoingMessage = "IntermediateFile.txt";
+        outgoingMessage = generateWordCountIntermediateFile(filePath, startLineNo, endLineNo);
         outputStream.writeUTF(outgoingMessage);
 
         incomingMessage = inputStream.readUTF();
-        System.out.println("Message from Client : "+incomingMessage);
+        System.out.println("Message from Client : " + incomingMessage);
 
-        //close streams and socket
+        // close streams and socket
         inputStream.close();
         outputStream.close();
         socket.close();
 
     }
 
-    private static void startMapPhase(UseCase useCase) throws Exception{
+    private static void startMapPhase(UseCase useCase) throws Exception {
 
-//        TODO Read File Line By Line and split by space, write key,value pair to intermediate file
-
+        // TODO Read File Line By Line and split by space, write key,value pair to
+        // intermediate file
 
     }
 
     private static void hostServer() {
-//        TODO Start Server
+        // TODO Start Server
     }
 
-    private static void fetchInstructionsFromMaster() throws Exception{
+    private static void fetchInstructionsFromMaster() throws Exception {
 
-//        TODO Wait for Master To Send Instructions
-        String incomingMessage,outgoingMessage;
-        while(true){
+        // TODO Wait for Master To Send Instructions
+        String incomingMessage, outgoingMessage;
+        while (true) {
             socket = server.accept();
 
             inputStream = new DataInputStream(socket.getInputStream());
@@ -139,53 +139,55 @@ public class Worker{
 
             incomingMessage = inputStream.readUTF();
 
-            if(incomingMessage.equals(Constants.MAP_PHASE)){
+            if (incomingMessage.equals(Constants.MAP_PHASE)) {
                 outputStream.writeUTF(Constants.OK);
-                startMapPhase(inputStream,outputStream);
-            }else{
+                startMapPhase(inputStream, outputStream);
+            } else {
                 outputStream.writeUTF(Constants.OK);
-                startReducePhase(inputStream,outputStream);
+                startReducePhase(inputStream, outputStream);
             }
 
         }
     }
 
-    private static void startMapPhase(DataInputStream inputStream, DataOutputStream outputStream) throws IOException ,Exception{
+    private static void startMapPhase(DataInputStream inputStream, DataOutputStream outputStream)
+            throws IOException, Exception {
 
-        String incomingMessage,outgoingMessage;
+        String incomingMessage, outgoingMessage;
         filePath = inputStream.readUTF();
-        System.out.println("Working with file : "+filePath);
+        System.out.println("Working with file : " + filePath);
         outputStream.writeUTF(Constants.OK);
 
         incomingMessage = inputStream.readUTF();
         startLineNo = Integer.parseInt(incomingMessage);
-        System.out.println("Start Line (Exclusive) : "+ startLineNo);
+        System.out.println("Start Line (Exclusive) : " + startLineNo);
         outputStream.writeUTF(Constants.OK);
 
         incomingMessage = inputStream.readUTF();
         endLineNo = Integer.parseInt(incomingMessage);
-        System.out.println("End Line (Inclusive) : "+ endLineNo);
+        System.out.println("End Line (Inclusive) : " + endLineNo);
         outputStream.writeUTF(Constants.OK);
 
-        //TODO Now perform map phase and generate Intermediate File
+        // TODO Now perform map phase and generate Intermediate File
 
-        //Send response to master
+        // Send response to master
         incomingMessage = inputStream.readUTF();
-        System.out.println("Message from Client : "+incomingMessage);
-//        outgoingMessage = "IntermediateFile.txt";
-        outgoingMessage = generateWordCountIntermediateFile(filePath,startLineNo,endLineNo);
+        System.out.println("Message from Client : " + incomingMessage);
+        // outgoingMessage = "IntermediateFile.txt";
+        outgoingMessage = generateWordCountIntermediateFile(filePath, startLineNo, endLineNo);
         outputStream.writeUTF(outgoingMessage);
 
         incomingMessage = inputStream.readUTF();
-        System.out.println("Message from Client : "+incomingMessage);
+        System.out.println("Message from Client : " + incomingMessage);
 
-        //close streams and socket
+        // close streams and socket
         inputStream.close();
         outputStream.close();
         socket.close();
     }
 
-    private static String generateWordCountIntermediateFile(String filePath, int startLineNo, int endLineNo) throws Exception{
+    private static String generateWordCountIntermediateFile(String filePath, int startLineNo, int endLineNo)
+            throws Exception {
 
         Path intermediateFilePath = Paths.get("intermediateFile.txt");
         BufferedWriter intermediateFileWriter = Files.newBufferedWriter(intermediateFilePath);
@@ -195,7 +197,7 @@ public class Worker{
         lines.skip(startLineNo);
         String line;
         int count = 0;
-        for (Iterator it = lines.iterator(); it.hasNext(); ) {
+        for (Iterator it = lines.iterator(); it.hasNext();) {
             line = (String) it.next();
             line = line.replaceAll("\\p{Punct}", "");
             line = line.replaceAll("\\s+", " ");
@@ -203,12 +205,12 @@ public class Worker{
 
             String[] words = line.split(" ");
 
-            for(String word : words){
+            for (String word : words) {
                 intermediateFileWriter.write(word.toLowerCase() + "," + "1");
                 intermediateFileWriter.newLine();
             }
 
-            if(++count == endLineNo){
+            if (++count == endLineNo) {
                 break;
             }
         }

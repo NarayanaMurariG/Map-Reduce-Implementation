@@ -1,4 +1,4 @@
-package mapReduce;
+package mapreduce;
 
 public enum ProcessType {
     MAP, REDUCE

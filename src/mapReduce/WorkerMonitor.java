@@ -1,6 +1,6 @@
-package mapReduce;
+package mapreduce;
 
-public class WorkerMonitor implements Runnable{
+public class WorkerMonitor implements Runnable {
 
     private int id;
     private int address;

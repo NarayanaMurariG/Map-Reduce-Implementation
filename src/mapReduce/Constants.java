@@ -1,4 +1,4 @@
-package mapReduce;
+package mapreduce;
 
 public class Constants {
     public static final int SEGMENT_SIZE = 100;
