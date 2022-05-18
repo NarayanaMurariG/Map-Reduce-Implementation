@@ -1,4 +1,4 @@
-package mapReduce;
+package mapreduce;
 
 import java.util.ArrayList;
 import java.util.List;

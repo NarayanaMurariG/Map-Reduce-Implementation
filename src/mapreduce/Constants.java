@@ -1,4 +1,4 @@
-package mapReduce;
+package mapreduce;
 
 public class Constants {
     public static final int SEGMENT_SIZE = 100;
@@ -8,4 +8,7 @@ public class Constants {
     public static final String BUSY = "BUSY";
     public static final String MAP_PHASE = "MAP_PHASE";
     public static final String OK = "OK";
+    public static final int MASTER_THREAD_POOL_SIZE = 3;
+    public static final int SLAVE_COUNT = 3;
+    public static final int BASE_WORKER_PORT = 8080;
 }
