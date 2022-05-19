@@ -20,6 +20,8 @@ public class Client {
                 String useCase = args[1];
 
                 String outputFile = sendRequest(inputFile,useCase);
+
+                System.out.println("Final Output Files : "+outputFile);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -33,12 +35,14 @@ public class Client {
         // obtaining input and out streams
         DataInputStream dis = new DataInputStream(socket.getInputStream());
         DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-
+        System.out.println("Input File : "+inputFile);
+        System.out.println("Use Case : "+useCase);
+        System.out.println("Sending request to master server....");
         dos.writeUTF(inputFile);
-        System.out.println(dis.readUTF());
+        dis.readUTF();
 
         dos.writeUTF(useCase);
-        System.out.println(dis.readUTF());
+        dis.readUTF();
 
         dos.writeUTF("Send output file");
         String outputFile = dis.readUTF();

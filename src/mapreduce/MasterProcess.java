@@ -21,10 +21,9 @@ public class MasterProcess {
 
     public static void main(String[] args) throws Exception{
 
-//        startServerAndListen();
+        startServerAndListen();
 
-
-        fileName = args[0];
+       /* fileName = args[0];
 
         if(args[1].equalsIgnoreCase(UseCase.WORD_COUNT.toString())){
             useCase = UseCase.WORD_COUNT;
@@ -35,7 +34,7 @@ public class MasterProcess {
         List<String> intermediateFiles = startMapPhase(useCase);
         System.out.println(intermediateFiles.toString());
         List<String> outputFiles = startReducePhase(useCase,intermediateFiles);
-        System.out.println("The final generated output files are : "+outputFiles.toString());
+        System.out.println("The final generated output files are : "+outputFiles.toString());*/
 //        generateFileOutputFile(outputFiles);
     }
 
@@ -75,13 +74,27 @@ public class MasterProcess {
                 String inputFile = dis.readUTF();
                 dos.writeUTF(Constants.OK);
 
-                String useCase = dis.readUTF();
+                String useCaseStr = dis.readUTF();
                 dos.writeUTF(Constants.OK);
 
                 System.out.println(dis.readUTF());
-                //TODO Send to workers and get final file
+
+                fileName = inputFile;
+
+                if(useCaseStr.equalsIgnoreCase(UseCase.WORD_COUNT.toString())){
+                    useCase = UseCase.WORD_COUNT;
+                }else{
+                    useCase = UseCase.REVERSE_WEB_LINK;
+                }
+
+                List<String> intermediateFiles = startMapPhase(useCase);
+                System.out.println(intermediateFiles.toString());
+                List<String> outputFiles = startReducePhase(useCase,intermediateFiles);
+                System.out.println("The final generated output files are : "+outputFiles.toString());
+
+
                 String finalFile = "finalFile";
-                dos.writeUTF(finalFile);
+                dos.writeUTF(outputFiles.toString());
 
                 System.out.println(dis.readUTF());
 
