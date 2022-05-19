@@ -11,4 +11,7 @@ public class Constants {
     public static final int MASTER_THREAD_POOL_SIZE = 3;
     public static final int SLAVE_COUNT = 3;
     public static final int BASE_WORKER_PORT = 8080;
+    public static final int MASTER_PORT = 9000;
+    public static final String REDUCE_PHASE = "REDUCE_PHASE";
+    public static final String WORD_COUNT = "WORD_COUNT";
 }
