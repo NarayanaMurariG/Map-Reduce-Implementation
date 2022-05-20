@@ -2,6 +2,7 @@ package mapreduce;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -12,7 +13,7 @@ public class ReduceCoordinator implements Callable<String> {
     private Map keyMapping;
     private int workerNo;
 
-    public ReduceCoordinator(String intermediateFile, UseCase useCase,Map map,int workerNo) {
+    public ReduceCoordinator(String intermediateFile, UseCase useCase, Map map, int workerNo) {
         this.intermediateFile = intermediateFile.trim();
         this.useCase = useCase;
         this.keyMapping = map;
@@ -22,7 +23,7 @@ public class ReduceCoordinator implements Callable<String> {
     @Override
     public String call() throws Exception {
 
-        if(useCase.equals(UseCase.WORD_COUNT)){
+        if (useCase.equals(UseCase.WORD_COUNT)) {
             try {
                 BufferedReader br = new BufferedReader(new FileReader(intermediateFile));
                 String line = br.readLine();
@@ -33,20 +34,64 @@ public class ReduceCoordinator implements Callable<String> {
                     int value = Integer.parseInt(words[1]);
 
                     int worker = (Math.abs(key.hashCode())) % 3 + 1;
-//                    System.out.println("Key : "+key+" HashCode : "+worker);
+                    // System.out.println("Key : "+key+" HashCode : "+worker);
                     if (worker == workerNo) {
                         // KeyMapping.computeIfAbsent(key, 1);
-                        if(keyMapping.containsKey(key)){
+                        if (keyMapping.containsKey(key)) {
                             int val = (int) keyMapping.get(key);
-                            keyMapping.put(key,val+1);
-                        }else{
-                            keyMapping.put(key,1);
+                            keyMapping.put(key, val + 1);
+                        } else {
+                            keyMapping.put(key, 1);
                         }
 
-//                        keyMapping.putIfAbsent(key, value);
-//                        keyMapping.computeIfPresent(key, (k, v) -> (int) v + 1);
+                        // keyMapping.putIfAbsent(key, value);
+                        // keyMapping.computeIfPresent(key, (k, v) -> (int) v + 1);
                     }
 
+                    // read next line
+                    line = br.readLine();
+                }
+                br.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if (useCase.equals(UseCase.DISTRIBUTED_GREP)) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(intermediateFile));
+                String line = br.readLine();
+                while (line != null) {
+                    String[] words = line.split(",");
+                    String key = words[0];
+                    String value = words[1];
+                    int worker = (Math.abs(key.hashCode())) % 3 + 1;
+                    if (worker == workerNo) {
+                        keyMapping.put(key, value);
+                    }
+                    line = br.readLine();
+                }
+                br.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if (useCase.equals(UseCase.REVERSE_WEB_LINK)) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(intermediateFile));
+                String line = br.readLine();
+                while (line != null) {
+                    // line = <target, source>
+                    String[] words = line.split(",");
+                    String key = words[0];
+                    String value = words[1];
+
+                    int worker = (Math.abs(key.hashCode())) % 3 + 1;
+                    if (worker == workerNo) {
+                        if (keyMapping.containsKey(key)) {
+                            List<String> sourceslist = (List<String>) keyMapping.get(key);
+                            keyMapping.put(key, sourceslist.add(value));
+                        } else {
+                            keyMapping.put(key, value);
+                        }
+                    }
                     // read next line
                     line = br.readLine();
                 }
