@@ -61,7 +61,7 @@ IDE like eclipse or IntelliJ
 4) To start workers use below instruction or create run config
 <br> Worker 1 : java mapreduce.Worker 1 8080
 <br> Worker 2 : java mapreduce.Worker 2 8100 
-<br>Worker 3 : java mapreduce.Worker 1 8120
+<br>Worker 3 : java mapreduce.Worker 3 8120
 5) Then start master process. Master process takes input file name and use case as arguments.
 <br> Master : java mapreduce.MasterProcess
 6) For Word Count use case (Takes inputfile, usecase as inputs)
