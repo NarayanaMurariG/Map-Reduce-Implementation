@@ -21,26 +21,16 @@ public class MasterProcess {
 
     public static void main(String[] args) throws Exception{
 
+        //Hosting server and waiting for clients
         startServerAndListen();
-
-       /* fileName = args[0];
-
-        if(args[1].equalsIgnoreCase(UseCase.WORD_COUNT.toString())){
-            useCase = UseCase.WORD_COUNT;
-        }else{
-            useCase = UseCase.REVERSE_WEB_LINK;
-        }
-
-        List<String> intermediateFiles = startMapPhase(useCase);
-        System.out.println(intermediateFiles.toString());
-        List<String> outputFiles = startReducePhase(useCase,intermediateFiles);
-        System.out.println("The final generated output files are : "+outputFiles.toString());*/
-//        generateFileOutputFile(outputFiles);
     }
 
-    private static void generateFileOutputFile(List<String> outputFiles) {
-    }
 
+    /*
+        Reduce phase takes intermediate files as input and also use case and uses worker coordinator threads to
+        communicate with workers by sending intermediate files
+        It gets the final output files from the workers which it returns to the client
+    */
     private static List<String> startReducePhase(UseCase useCase,List<String> intermediateFiles) throws ExecutionException, InterruptedException {
 
         ExecutorService executors = Executors.newFixedThreadPool(Constants.MASTER_THREAD_POOL_SIZE);
@@ -49,7 +39,7 @@ public class MasterProcess {
         int workerPort;
         for(int i=1;i<=Constants.SLAVE_COUNT;i++){
             workerPort = getWorkerPortNumber(i);
-            futureTasks[i-1] = new FutureTask(new WorkerCoordinator(workerPort,intermediateFiles.toString(),ProcessType.REDUCE,UseCase.WORD_COUNT));
+            futureTasks[i-1] = new FutureTask(new WorkerCoordinator(workerPort,intermediateFiles.toString(),ProcessType.REDUCE,useCase));
             executors.submit(futureTasks[i-1]);
         }
 
@@ -63,8 +53,12 @@ public class MasterProcess {
 
     private static void startServerAndListen(){
         try {
+
+            // Hosting server
             server = new ServerSocket(Constants.MASTER_PORT);
             while(true){
+
+                // Waiting on incoming connections
                 Socket socket = server.accept();
 
                 // obtaining input and out streams
@@ -77,18 +71,30 @@ public class MasterProcess {
                 String useCaseStr = dis.readUTF();
                 dos.writeUTF(Constants.OK);
 
+                String pattern = null;
+                if(useCaseStr.equalsIgnoreCase(UseCase.DISTRIBUTED_GREP.toString())){
+                    pattern = dis.readUTF();
+                    dos.writeUTF(Constants.OK);
+                }
+
                 System.out.println(dis.readUTF());
 
                 fileName = inputFile;
-
+                System.out.println("Use Case : " + useCaseStr);
                 if(useCaseStr.equalsIgnoreCase(UseCase.WORD_COUNT.toString())){
                     useCase = UseCase.WORD_COUNT;
-                }else{
+                }else if (useCaseStr.equalsIgnoreCase(UseCase.REVERSE_WEB_LINK.toString())){
                     useCase = UseCase.REVERSE_WEB_LINK;
+                }else {
+                    useCase = UseCase.DISTRIBUTED_GREP;
                 }
 
-                List<String> intermediateFiles = startMapPhase(useCase);
+
+                // Starting Map phase
+                List<String> intermediateFiles = startMapPhase(useCase,pattern);
                 System.out.println(intermediateFiles.toString());
+
+                // Starting Reduce Phase
                 List<String> outputFiles = startReducePhase(useCase,intermediateFiles);
                 System.out.println("The final generated output files are : "+outputFiles.toString());
 
@@ -108,7 +114,11 @@ public class MasterProcess {
 
     }
 
-    private static List<String> startMapPhase(UseCase useCase) throws Exception{
+    /*
+        Map phase takes input files, useCase and the distrubutes set of lines to each of the worker node using
+        Worker Coordinator and then gets the final intermediate file as output from worker coordinator
+     */
+    private static List<String> startMapPhase(UseCase useCase, String pattern) throws Exception{
 
         long totalNoOfLines = Utils.getTotalNoOfLines(fileName);
         System.out.println("Total No Of Lines : "+totalNoOfLines);
@@ -122,7 +132,10 @@ public class MasterProcess {
             workerPort = getWorkerPortNumber(i);
             startLine = getStartLineNo(i,totalNoOfLines);
             endLine = getEndLineNo(i,totalNoOfLines);
-            futureTasks[i-1] = new FutureTask(new WorkerCoordinator(workerPort,startLine,endLine,fileName,ProcessType.MAP,UseCase.WORD_COUNT));
+            System.out.println("Debug : "+ pattern);
+            WorkerCoordinator coordinator = new WorkerCoordinator(workerPort,startLine,endLine,fileName,ProcessType.MAP,useCase);
+            coordinator.setInputParameter(pattern);
+            futureTasks[i-1] = new FutureTask(coordinator);
             executors.submit(futureTasks[i-1]);
         }
 

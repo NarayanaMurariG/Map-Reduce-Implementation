@@ -6,6 +6,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.*;
 
+
+/*
+    These are threads to coordinate with worker processes independently and parallelly
+*/
 public class WorkerCoordinator implements Callable<String> {
 
     private int workerPort;
@@ -16,6 +20,13 @@ public class WorkerCoordinator implements Callable<String> {
     private ProcessType processType;
     private String finalOutputFile;
     private UseCase useCase;
+    private String inputParameter = null;
+
+    public void setInputParameter(String inputParameter) {
+        this.inputParameter = inputParameter;
+    }
+
+
 
     public WorkerCoordinator(int workerPort, long startLine, long endLine, String fileName,ProcessType processType,UseCase useCase) {
         this.workerPort = workerPort;
@@ -42,6 +53,9 @@ public class WorkerCoordinator implements Callable<String> {
         InetAddress ip = InetAddress.getByName("localhost");
         Socket socket = new Socket(ip,workerPort);
 
+        // Based on the either map or reduce phase, these worker coordinators act accordingly and communicate with
+        // worker nodes
+
         // obtaining input and out streams
         DataInputStream dis = new DataInputStream(socket.getInputStream());
         DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
@@ -62,6 +76,16 @@ public class WorkerCoordinator implements Callable<String> {
             dos.writeUTF(Long.toString(endLine));
             incomingMessage = dis.readUTF();
 //            System.out.println(incomingMessage);
+
+            //Sending Use case
+            dos.writeUTF(useCase.toString());
+            incomingMessage = dis.readUTF();
+
+            if(useCase.equals(UseCase.DISTRIBUTED_GREP)){
+                dos.writeUTF(inputParameter);
+                incomingMessage = dis.readUTF();
+            }
+
 
             dos.writeUTF("Send me intermediateFile Name");
             intermediateFile = dis.readUTF();
